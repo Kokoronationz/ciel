@@ -1,23 +1,23 @@
 const { createHash } = require('crypto')
-let Reg = /\|?(.*)([.|])([0-9]*)$/i
+let Reg = /\|?(.*)([.|] *?)([0-9]*)$/i
 let handler = async function (m, { text, usedPrefix }) {
-  
-  let rtotalreg = Object.values(global.DATABASE._data.users).filter(user => user.registered == true).length
   let user = global.DATABASE._data.users[m.sender]
-  let tnbot = (await conn.getFile(await conn.getProfilePicture(m.fromMe))).data.toString('base64')
-  if (user.registered === true) throw `Lu udah terdaftar\nMau daftar ulang? ${usedPrefix}unreg <SN|SERIAL NUMBER>`
-  if (!Reg.test(text)) throw `Ga gitu njirr\n\n*${usedPrefix}daftar <nama>|<umur>*`
+  if (user.registered === true) throw `Anda sudah terdaftar\nMau daftar ulang? ${usedPrefix}unreg <SN|SERIAL NUMBER>`
+  if (!Reg.test(text)) throw `Ga Gitu Njirr\n*${usedPrefix}daftar nama.umur*`
   let [_, name, splitter, age] = text.match(Reg)
-  if (!name) throw 'Nama tidak boleh kosong (Alphanumeric)'
-  if (!age) throw 'Umur tidak boleh kosong (Angka)'
-  if (age < 18) throw 'Pendaftaran lu, gw tolak.'
-  if (age > 40) throw 'Bau tanah, gw ga suka.'
-  user.name = name
-  user.age = parseInt(age)
+  if (!name) throw 'Nama jangan di kosongin (Alphanumeric)'
+  if (!age) throw 'Umur jangan di kosongin (Angka)'
+  age = parseInt(age)
+  if (age > 40) throw 'Bau tanah, saya ga suka'
+  if (age < 18) throw 'Pendaftaranmu saya tolak'
+  user.name = name.trim()
+  user.age = age
   user.regTime = + new Date
   user.registered = true
   let sn = createHash('md5').update(m.sender).digest('hex')
-  let caption = `
+  m.reply(`
+Daftar berhasil!
+
 ┏ ┅ ━━━━━━━━━━━━━━━━━━━━━ ┅ ━
 ┇       *「 INFORMATION 」*
 ┣ ┅ ━━━━━━━━━━━━━━━━━━━━━ ┅ ━
@@ -44,10 +44,9 @@ await conn.reply(m.chat, caption, {
       "jpegThumbnail": tnbot} } }, { contextInfo: { mentionedJid: [m.sender] } })
 global.DATABASE._data.users[m.sender].uang += 10000
 }
-handler.help = ['daftar', 'register'].map(v => v + ' <nama>|<umur>')
-handler.tags = ['main']
+handler.help = ['daftar', 'reg', 'register'].map(v => v + ' <nama>.<umur>')
+handler.tags = ['exp']
 
 handler.command = /^(daftar|reg(ister)?)$/i
 
 module.exports = handler
-
